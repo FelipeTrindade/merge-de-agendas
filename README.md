@@ -1,60 +1,62 @@
 # Merge de Agendas
 
-Duas skills do Claude (Cowork / Claude Code) para integrar a agenda corporativa do Outlook Web com a agenda pessoal do Google Calendar, sem precisar de serviço pago de sincronização (OneCal, CalendarBridge, etc).
+Três skills do Claude (Cowork / Claude Code) para integrar a agenda corporativa do Outlook Web com a agenda pessoal do Google Calendar, sem precisar de serviço pago de sincronização (OneCal, CalendarBridge, etc).
 
 Funciona **diretamente no navegador Edge** via a extensão **Claude in Chrome** — não usa OAuth nem APIs corporativas, então não depende de aprovação do TI da empresa.
 
-## As duas skills
+## Como usar em outro computador (TL;DR)
+
+```bash
+git clone https://github.com/FelipeTrindade/merge-de-agendas.git
+cd merge-de-agendas
+# Siga o INSTALL.md:
+#   1. Instala Cowork ou Claude Code
+#   2. Instala MCPs: Claude in Chrome + Desktop Commander
+#   3. Instala os 3 .skill de dist/
+#   4. Loga as 2 contas no Edge
+#   5. Copia docs/memory-template.md pra memória do seu usuário do Claude
+```
+
+Detalhes completos em [`INSTALL.md`](INSTALL.md).
+
+## As três skills
 
 ### 1. `merge-agendas` — sincronização semanal em lote
 
-Comando do usuário: **"Faça o merge das agendas"**
+Comando: **"Faça o merge das agendas"**
 
 - Lê os compromissos das próximas 6 semanas no Outlook corporativo e Google Calendar pessoal
 - Identifica eventos do Outlook que ainda não estão no Google
-- **Propaga cancelamentos**: se um evento sincronizado no Google foi cancelado no Outlook (título virou `Cancelado:`) ou removido, marca pra deletar do Google
+- **Propaga cancelamentos**: se um evento sincronizado no Google foi cancelado no Outlook (título virou `Cancelado:`) ou removido, marca pra deletar do Google (delegando pra skill `deletar-evento-duplo`)
 - Mostra preview completo no chat antes de criar ou deletar qualquer coisa
-- Gera arquivo `.ics` com os eventos a criar para upload no Google Calendar (handoff manual de ~10s)
+- Gera `.ics` com os eventos a criar para upload no Google Calendar (handoff manual de ~10s, devido a restrição de upload da extensão Claude in Chrome)
 - **Idempotente**: cada cópia leva tag `[merge-agendas | source=outlook]` na descrição, runs seguintes não duplicam
 
-Direção padrão: **unilateral Outlook → Google**. Bidirecional só se você pedir explicitamente.
+Direção padrão: **unilateral Outlook → Google**. Bidirecional só sob pedido explícito.
 
 ### 2. `criar-evento-duplo` — criação avulsa em tempo real
 
-Comandos do usuário: **"Cria evento X amanhã às 14h"**, **"Marca reunião com cliente sexta 10h"**, etc.
+Comandos: **"Cria evento X amanhã às 14h"**, **"Marca reunião com cliente sexta 10h"**, etc.
 
 - Parseia o pedido em linguagem natural (título, data relativa, horário)
-- Abre dois deeplinks pré-preenchidos: um no Google Calendar (`/r/eventedit`), outro no Outlook (`/calendar/0/deeplink/compose`)
+- Abre dois deeplinks pré-preenchidos: Google (`/r/eventedit`) e Outlook (`/calendar/0/deeplink/compose`)
 - Clica Save em cada
 - Verifica que ambos foram criados
 - Tempo total: ~15-20s
 
 Pode ser unilateral também ("só na pessoal", "só no trabalho").
 
-## Instalação
+### 3. `deletar-evento-duplo` — remoção de evento (novo em v1.1.0)
 
-Ver [`INSTALL.md`](INSTALL.md) para passo a passo. Resumo:
+Comandos: **"Apaga evento X"**, **"Cancela aquela reunião de hoje"**, **"Tira do calendário"**
 
-1. Cowork ou Claude Code instalado
-2. Instalar dois plugins/conectores: **Claude in Chrome** + **Desktop Commander**
-3. Instalar os dois `.skill` de `dist/`
-4. Setup inicial: as duas contas (corporativa Outlook + pessoal Gmail) logadas no Edge
-5. Memória inicial: copiar `docs/memory-template.md` pra sua memória de usuário do Claude
+- Identifica o evento por título + data/hora
+- Click via JS no aria-label (mais confiável que click por coordenada — descoberto na prática)
+- Trata o dialog de confirmação do Outlook automaticamente
+- Não notifica participantes em cancelamentos a não ser que pedido
+- **Invocada internamente pela `merge-agendas`** quando precisa deletar cópias órfãs/canceladas
 
 ## Documentação
 
 - [`INSTALL.md`](INSTALL.md) — instruções de instalação em uma máquina nova
-- [`CHANGELOG.md`](CHANGELOG.md) — histórico de versões
-- [`docs/connectors.md`](docs/connectors.md) — quais MCPs/plugins o Claude precisa
-- [`docs/memory-template.md`](docs/memory-template.md) — memória de contexto pro Claude entender o setup
-- [`docs/lessons-learned.md`](docs/lessons-learned.md) — descobertas sobre automação de Outlook/Google que valem a pena pré-saber
-- `skill-source/` — código-fonte editável das duas skills
-- `dist/` — pacotes `.skill` prontos pra instalar
-
-## Versão
-
-v1.0.0 — primeira release com merge unilateral e propagação de cancelamentos.
-
-## Licença
-
-Uso pessoal. Sem afiliação com Microsoft, Google, Anthropic.
+- [`CHANGELOG.md`](CHANGELOG.md) — histórico

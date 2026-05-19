@@ -1,5 +1,24 @@
 # Changelog
 
+## v1.1.0 — 2026-05-19
+
+### Nova skill: `deletar-evento-duplo`
+
+- Apaga um evento específico em Outlook, Google ou ambos.
+- Identifica via título + data/hora; em caso de ambiguidade, pergunta.
+- **Click via JS no `aria-label`** ao invés de coordenada — descoberto que coords falham com frequência (popups movem, layouts variam). JS click no `aria-label="Delete event"` (Google) ou `aria-label="Excluir"` (Outlook) é determinístico.
+- Trata dialog de confirmação do Outlook automaticamente.
+- Detecta evento com participantes e cancela sem notificar (não dispara email involuntário aos colegas).
+- Limite de segurança: 1 evento por chamada direta; 10 por run em batch (vindo do `merge-agendas`).
+
+### `merge-agendas` atualizado
+
+- Fase de propagação de cancelamentos agora **delega pra `deletar-evento-duplo`** em vez de implementar a UI inline. Lógica de deleção fica centralizada.
+
+### Docs
+
+- README com bloco "como usar em outro computador (TL;DR)" visível no topo.
+
 ## v1.0.0 — 2026-05-19
 
 Primeira release pública.
@@ -12,19 +31,4 @@ Primeira release pública.
 - Extração via `innerText` no Google week view (formato `Nam to Mpm, Title, Owner, location, Month DD, YYYY`).
 - Filtro automático de eventos com prefixo `Cancelado:` / `Canceled:` / `Cancelled:`.
 - Janela padrão: 6 semanas a partir de hoje.
-- Limite de segurança: 50 criações + 10 deleções por direção. Acima disso, para e pede confirmação.
-- Output do plano via `scripts/compute_diff.py` (matching por título normalizado + start ±5min, tolerância de pontuação/acento/emoji).
-- Geração de `.ics` para upload manual no Google Calendar (handoff de ~10s, devido a restrição da extensão Claude in Chrome em uploads automatizados de arquivos locais).
-
-### `criar-evento-duplo`
-
-- Criação de evento único simultaneamente em Outlook + Google Calendar via deeplinks pré-preenchidos.
-- Outlook usa `/calendar/0/deeplink/compose?subject=...&startdt=ISO_LOCAL&enddt=ISO_LOCAL&body=...`
-- Google usa `/r/eventedit?text=...&dates=YYYYMMDDTHHMMSSZ/YYYYMMDDTHHMMSSZ&details=...`
-- Parseamento de linguagem natural ("amanhã às 14h", "sexta 10h por 30min", etc).
-- Opção de criar só em uma das duas via "só na pessoal" / "só no trabalho".
-
-### Infraestrutura
-
-- Repositório no GitHub com versionamento.
-- Documentação: README, INSTALL, docs/connectors.md, docs/memory-template.md, docs/lessons-learned.md.
+- Limite de segurança: 50 criações + 10 deleções por direção. Acima disso, para e p

@@ -402,25 +402,21 @@ Adicionar nova categoria ao plano:
 }
 ```
 
-#### Como deletar no Google via UI
+#### Como deletar — delegar pra skill `deletar-evento-duplo`
 
-Para cada evento a deletar:
-1. Clicar no tile do evento no Google Calendar (`data-eventid` element)
-2. No popup que abre, clicar no botão "Delete" (ícone lixeira) — geralmente no topo do popup
-3. Se aparecer confirmação ("Delete event?") → confirmar
-4. Aguardar fechar e ir pro próximo
+A skill `deletar-evento-duplo` tem toda a lógica testada de click via JS (mais confiável que
+coord), tratamento do dialog do Outlook, etc. Em vez de duplicar essa lógica aqui, **invocar**
+ela passando a lista de eventos a deletar (com `agenda: "google"` em cada um — esta skill
+nunca deleta no Outlook automaticamente, é unilateral por padrão).
 
-Detalhes:
-- O `data-eventid` é único e estável. Achar com:
-  ```js
-  document.querySelector(`[data-eventid="${id}"]`)
-  ```
-- Botão Delete tem aria-label "Delete event" (em inglês mesmo na UI pt-BR)
-- Esperar 1s entre cada delete
+Resumo do que aquela skill faz pra Google:
+1. Click no tile → mini popup
+2. JS click no `aria-label="Delete event"` (em inglês mesmo) → deleta direto, sem confirmação
+3. Verifica que o tile sumiu
 
-**Limite de segurança**: se mais de 10 eventos forem marcados pra deletar em uma run,
-PARAR e mostrar a lista pro Felipe confirmar antes de prosseguir. Deletar de massa por
-acidente é o pior cenário que essa skill pode causar.
+**Limite de segurança herdado**: 10 deleções por run. Se exceder, parar e mostrar lista pro
+Felipe confirmar antes de prosseguir. Deletar de massa por acidente é o pior cenário que
+essa skill pode causar.
 
 ---
 
@@ -454,5 +450,4 @@ TOTAL: 7 criações + 2 deleções. Confirma que posso prosseguir? (sim/não)
 
 - Se `criar_no_google` > LIMITE_CRIACOES_POR_DIRECAO (50) → parar e perguntar:
   "Caí em 73 criações no Google. Suspeito de problema na extração. Quer que eu mostre os
-  primeiros 10 pra você sanity-check antes de seguir?"
-- Mesmo p
+  primeiros 10 pra você sanity-
