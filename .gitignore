@@ -1,0 +1,23 @@
+# Arquivos .ics gerados por runs (contêm nomes reais de reuniões — não committar)
+*.ics
+
+# Estado e logs de runs
+.merge_state.json
+plano_merge.json
+eventos_outlook.json
+eventos_google.json
+
+# Arquivos temporários do Windows
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+
+# Misc
+.DS_Store
