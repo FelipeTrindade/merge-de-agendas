@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.1.1 — 2026-05-19
+
+### Docs
+
+- Adicionado [`docs/usage.md`](docs/usage.md) — exemplos reais de conversa com cada skill, mostrando o que falar e o que esperar de retorno em cada cenário (merge, criar, apagar).
+- Adicionado [`docs/triggers.md`](docs/triggers.md) — cheat sheet com todas as frases naturais que disparam cada skill.
+- README e INSTALL.md atualizados com links pros novos docs.
+
+Sem mudança de código. Patch só pra facilitar onboarding de novo computador.
+
 ## v1.1.0 — 2026-05-19
 
 ### Nova skill: `deletar-evento-duplo`
@@ -27,8 +37,4 @@ Primeira release pública.
 
 - Sincronização **unilateral Outlook → Google** por padrão (mais alinhado ao uso real: o trabalho enche a agenda corporativa e o usuário quer ver os blocos na pessoal). Bidirecional ainda suportado mediante pedido explícito.
 - **Propagação de cancelamentos**: eventos que viraram "Cancelado: ..." no Outlook OU que sumiram, e cuja cópia ainda existe no Google (com tag `[merge-agendas]`), são marcados pra deletar.
-- Extração via aria-labels no Outlook week view (formato `Título, HH:MM para HH:MM, DiaSemana, NN de Mes de AAAA, Por Organizador, Status, [Evento recorrente]`).
-- Extração via `innerText` no Google week view (formato `Nam to Mpm, Title, Owner, location, Month DD, YYYY`).
-- Filtro automático de eventos com prefixo `Cancelado:` / `Canceled:` / `Cancelled:`.
-- Janela padrão: 6 semanas a partir de hoje.
-- Limite de segurança: 50 criações + 10 deleções por direção. Acima disso, para e p
+- Extração via 

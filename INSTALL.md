@@ -73,6 +73,8 @@ Numa nova conversa do Claude, escreve:
 
 > "Faça o merge das agendas"
 
+(Tem [`docs/usage.md`](docs/usage.md) com exemplos passo-a-passo do que aparece no chat em cada cenário, e [`docs/triggers.md`](docs/triggers.md) com a lista completa de frases que disparam cada skill.)
+
 A skill deve:
 1. Conferir que o Edge está aberto e conectado
 2. Abrir o Outlook e Google Calendar em abas separadas
@@ -93,6 +95,4 @@ Se der errado em qualquer ponto, a skill **para** e te avisa onde, sem criar/del
 | Google abre `/workspace.google.com/products/calendar` | Conta Google não logada | Logue em calendar.google.com |
 | `file_upload` retorna "Not allowed" | Restrição da extensão | É política de segurança da Claude in Chrome — fazer upload do .ics manualmente é o caminho normal |
 | Outlook deeplink dá erro | URL mal-formada | Conferir que `startdt`/`enddt` estão em ISO local SEM Z |
-| Google Calendar mostra evento em horário errado | Confusão UTC/local | A skill converte pra UTC com Z; conferir TZ do navegador igual TZ do calendário |
-
-Detalhes técnicos extras em [`docs/lessons-learned.md`](docs/lessons-learned.md).
+| Google Calendar mostra evento em ho
