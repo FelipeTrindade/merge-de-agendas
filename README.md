@@ -17,7 +17,7 @@ cd merge-de-agendas
 #   5. Copia docs/memory-template.md pra memória do seu usuário do Claude
 ```
 
-Detalhes completos em [`INSTALL.md`](INSTALL.md).
+Detalhes completos em [`INSTALL.md`](INSTALL.md). Exemplos práticos de conversa em [`docs/usage.md`](docs/usage.md).
 
 ## As três skills
 
@@ -59,4 +59,19 @@ Comandos: **"Apaga evento X"**, **"Cancela aquela reunião de hoje"**, **"Tira d
 ## Documentação
 
 - [`INSTALL.md`](INSTALL.md) — instruções de instalação em uma máquina nova
-- [`CHANGELOG.md`](CHANGELOG.md) — histórico
+- [`CHANGELOG.md`](CHANGELOG.md) — histórico de versões
+- [`docs/usage.md`](docs/usage.md) — **exemplos reais de conversa** com cada skill (recomendado pra começar)
+- [`docs/triggers.md`](docs/triggers.md) — cheat sheet de frases que disparam cada skill
+- [`docs/connectors.md`](docs/connectors.md) — quais MCPs/plugins o Claude precisa
+- [`docs/memory-template.md`](docs/memory-template.md) — memória de contexto pro Claude entender o setup
+- [`docs/lessons-learned.md`](docs/lessons-learned.md) — descobertas sobre automação de Outlook/Google que valem a pena pré-saber
+- `skill-source/` — código-fonte editável das três skills
+- `dist/` — pacotes `.skill` prontos pra instalar
+
+## Versão atual
+
+**v1.1.1** — docs/usage.md e docs/triggers.md adicionados pra facilitar onboarding em máquina nova. Ver [CHANGELOG.md](CHANGELOG.md) para histórico.
+
+## Licença
+
+Uso pessoal. Sem afiliação com Microsoft, Google, Anthropic.
