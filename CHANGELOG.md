@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.1.2 — 2026-05-19
+
+### Verificação de versão
+
+- Adicionado arquivo `VERSION` na raiz com a versão atual (string `1.1.2`).
+- Seção "antes de rodar, confira a versão" no README e no INSTALL.md, com snippet bash pra comparar `VERSION` local com a última tag no Git.
+- Pré-requisitos das 3 skills agora referenciam essa verificação opcional como "Fase −1" (na `merge-agendas`).
+- Cobre o cenário: usuário tem instância antiga numa máquina, foi pra outra, esqueceu de atualizar.
+
 ## v1.1.1 — 2026-05-19
 
 ### Docs
@@ -29,12 +38,4 @@ Sem mudança de código. Patch só pra facilitar onboarding de novo computador.
 
 - README com bloco "como usar em outro computador (TL;DR)" visível no topo.
 
-## v1.0.0 — 2026-05-19
-
-Primeira release pública.
-
-### `merge-agendas`
-
-- Sincronização **unilateral Outlook → Google** por padrão (mais alinhado ao uso real: o trabalho enche a agenda corporativa e o usuário quer ver os blocos na pessoal). Bidirecional ainda suportado mediante pedido explícito.
-- **Propagação de cancelamentos**: eventos que viraram "Cancelado: ..." no Outlook OU que sumiram, e cuja cópia ainda existe no Google (com tag `[merge-agendas]`), são marcados pra deletar.
-- Extração via 
+## v1.0.0 — 2026-

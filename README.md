@@ -19,6 +19,23 @@ cd merge-de-agendas
 
 Detalhes completos em [`INSTALL.md`](INSTALL.md). Exemplos práticos de conversa em [`docs/usage.md`](docs/usage.md).
 
+## ⚠️ Antes de rodar — confira a versão instalada
+
+Estas skills evoluem rápido. **Antes de qualquer run em uma máquina**, garanta que a versão local está sincronizada com a do GitHub:
+
+```bash
+cd <onde-você-clonou>/merge-de-agendas
+git fetch --tags
+INSTALADA=$(cat VERSION 2>/dev/null || echo "?")
+ULTIMA=$(git tag --sort=-v:refname | head -n1 | sed 's/^v//')
+echo "Instalada: v$INSTALADA  |  Última no Git: v$ULTIMA"
+```
+
+- **Se baterem**: tá tudo certo, pode rodar.
+- **Se a do Git for mais nova**: rode `git pull` e **reinstale os .skill** em `dist/` no Claude (a versão instalada não atualiza sozinha quando o repo muda).
+
+Em chats com o Claude, você também pode pedir: *"confere se a versão do merge-de-agendas tá atualizada"* — a skill pode rodar esse check antes de qualquer ação.
+
 ## As três skills
 
 ### 1. `merge-agendas` — sincronização semanal em lote
@@ -46,7 +63,7 @@ Comandos: **"Cria evento X amanhã às 14h"**, **"Marca reunião com cliente sex
 
 Pode ser unilateral também ("só na pessoal", "só no trabalho").
 
-### 3. `deletar-evento-duplo` — remoção de evento (novo em v1.1.0)
+### 3. `deletar-evento-duplo` — remoção de evento
 
 Comandos: **"Apaga evento X"**, **"Cancela aquela reunião de hoje"**, **"Tira do calendário"**
 
@@ -65,12 +82,13 @@ Comandos: **"Apaga evento X"**, **"Cancela aquela reunião de hoje"**, **"Tira d
 - [`docs/connectors.md`](docs/connectors.md) — quais MCPs/plugins o Claude precisa
 - [`docs/memory-template.md`](docs/memory-template.md) — memória de contexto pro Claude entender o setup
 - [`docs/lessons-learned.md`](docs/lessons-learned.md) — descobertas sobre automação de Outlook/Google que valem a pena pré-saber
+- `VERSION` — versão atual (1.1.2)
 - `skill-source/` — código-fonte editável das três skills
 - `dist/` — pacotes `.skill` prontos pra instalar
 
 ## Versão atual
 
-**v1.1.1** — docs/usage.md e docs/triggers.md adicionados pra facilitar onboarding em máquina nova. Ver [CHANGELOG.md](CHANGELOG.md) para histórico.
+**v1.1.2** — adicionada verificação de versão local vs Git. Ver [CHANGELOG.md](CHANGELOG.md) para histórico.
 
 ## Licença
 

@@ -29,6 +29,31 @@ Não é um sync contínuo automático — é um merge único manual, rodado quan
 
 ---
 
+## Fase −1 — Verificar versão (proativo)
+
+Se for a primeira run desta sessão (ou se o Felipe pedir "antes confere a versão"), conferir
+que a versão instalada bate com a do Git. O arquivo `VERSION` no repo `merge-de-agendas`
+contém a versão atual.
+
+Como conferir (via Desktop Commander ou bash):
+
+```bash
+cd <repo>
+git fetch --tags
+INSTALADA=$(cat VERSION 2>/dev/null || echo '?')
+ULTIMA=$(git tag --sort=-v:refname | head -n1 | sed 's/^v//')
+[ "$INSTALADA" = "$ULTIMA" ] && echo "OK: v$INSTALADA" || echo "DESATUALIZADO: v$INSTALADA -> v$ULTIMA"
+```
+
+Se desatualizado: parar e avisar o Felipe:
+> "Sua versão local do `merge-de-agendas` é v$INSTALADA mas a última no Git é v$ULTIMA. Recomendo
+> `git pull` + reinstalar os .skill antes de rodar. Quer fazer agora ou prossigo mesmo assim?"
+
+Se a pasta do repo não estiver acessível ou não souber o caminho, pular esse check em silêncio —
+não bloquear o fluxo principal por causa disso.
+
+---
+
 ## Fase 0 — Garantir Edge aberto e Claude in Chrome conectado
 
 Esta fase roda automaticamente no início. Não pedir confirmação aqui — só agir.
@@ -426,28 +451,4 @@ Antes de criar qualquer coisa, mostrar no chat uma tabela como esta:
 
 ```
 PLANO DE MERGE — semana de 19/05/2026
-==========================================================
-
-Vou CRIAR 7 eventos no Google (vindos do Outlook):
-  • 20/05 14:00  Reunião 1:1 com Maria
-  • 21/05 09:30  Sprint planning
-  • 22/05 11:00  Café com cliente XPTO
-  ...
-
-Vou DELETAR 2 eventos no Google (cancelados no Outlook):
-  • 20/05 10:00  Daily Standup — cancelado no Outlook
-  • 23/05 15:00  Reunião com Banco — removido do Outlook
-
-Já em sync (nada a fazer): 12 eventos
-Casos ambíguos para revisar manualmente: 2
-  ? "Daily" às 09:00 no Outlook vs "Stand-up" às 09:00 no Google — mesmo evento?
-
-==========================================================
-TOTAL: 7 criações + 2 deleções. Confirma que posso prosseguir? (sim/não)
-```
-
-**Hardstops antes de pedir confirmação:**
-
-- Se `criar_no_google` > LIMITE_CRIACOES_POR_DIRECAO (50) → parar e perguntar:
-  "Caí em 73 criações no Google. Suspeito de problema na extração. Quer que eu mostre os
-  primeiros 10 pra você sanity-
+==================

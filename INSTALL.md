@@ -67,7 +67,29 @@ Pra que o Claude lembre do seu setup entre conversas (qual navegador, qual conta
 
 Edite o arquivo trocando os emails de exemplo pelos seus.
 
-## 6. Primeiro teste
+## 6. Confira a versão antes de rodar
+
+Antes de QUALQUER run (primeira ou subsequente), garanta que o que você tem instalado bate com a versão mais nova no Git. As skills evoluem rápido — bug fix ou nova funcionalidade pode mudar a forma de uso.
+
+```bash
+cd <pasta-do-clone>/merge-de-agendas
+git fetch --tags
+INSTALADA=$(cat VERSION 2>/dev/null || echo "?")
+ULTIMA=$(git tag --sort=-v:refname | head -n1 | sed 's/^v//')
+echo "Instalada: v$INSTALADA  |  Última no Git: v$ULTIMA"
+```
+
+**Se a do Git for mais nova:**
+
+1. `git pull` — puxa o código novo
+2. Reinstala os 3 arquivos de `dist/` no Claude (a versão instalada **não auto-atualiza** quando o repo muda; precisa reinstalar manualmente)
+3. Se `docs/memory-template.md` mudou, atualize sua memória também
+
+**Se baterem**, pode rodar tranquilo.
+
+Dica: dentro do chat com o Claude você pode pedir *"confere se o merge-de-agendas tá na versão mais nova"* — o Claude pode rodar esse mesmo check pra você.
+
+## 7. Primeiro teste
 
 Numa nova conversa do Claude, escreve:
 
@@ -80,19 +102,4 @@ A skill deve:
 2. Abrir o Outlook e Google Calendar em abas separadas
 3. Extrair eventos das próximas 6 semanas dos dois
 4. Calcular diff (criar + deletar)
-5. Te mostrar preview no chat
-6. Esperar você responder "sim" pra prosseguir
-7. Gerar `.ics` em Downloads e te guiar no upload manual no Google Calendar
-
-Se der errado em qualquer ponto, a skill **para** e te avisa onde, sem criar/deletar nada.
-
-## Troubleshooting
-
-| Sintoma | Causa | Solução |
-|---------|-------|---------|
-| `list_connected_browsers` vazio | Extensão não pareada | Clique no ícone da extensão Claude no Edge e autorize |
-| Outlook abre marketing page | Conta corporativa não logada | Logue manualmente em outlook.office.com no Edge |
-| Google abre `/workspace.google.com/products/calendar` | Conta Google não logada | Logue em calendar.google.com |
-| `file_upload` retorna "Not allowed" | Restrição da extensão | É política de segurança da Claude in Chrome — fazer upload do .ics manualmente é o caminho normal |
-| Outlook deeplink dá erro | URL mal-formada | Conferir que `startdt`/`enddt` estão em ISO local SEM Z |
-| Google Calendar mostra evento em ho
+5. Te mostrar previ

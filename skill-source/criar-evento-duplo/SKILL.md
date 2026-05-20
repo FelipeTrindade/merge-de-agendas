@@ -35,6 +35,10 @@ Tempo total: ~15-20 segundos.
 
 ## Pré-requisitos
 
+0. **Versão do repo atualizada** (opcional mas recomendado na primeira run da sessão). Se o
+   Felipe perguntar pela versão, ou se for a primeira interação com o conjunto de skills nesta
+   máquina, comparar `VERSION` local com a última tag no Git. Detalhes em
+   `merge-agendas/SKILL.md` Fase −1.
 1. **Edge aberto** com as duas contas logadas (corporativa + pessoal).
    - Se não estiver, usar `Start-Process msedge` via Desktop Commander e aguardar 5s.
    - Conferir `list_connected_browsers` — selecionar o que tem `name: "Edge"`.
@@ -252,8 +256,4 @@ Se as coordenadas falharem (click em área vazia), usar `find` com query "Save b
 - **Outlook deeplink aceita ISO local sem TZ** (ex: `2026-05-19T21:00:00`) — interpreta
   no timezone do navegador. Não tentar UTC, dá errado.
 - **Google deeplink exige UTC com Z** no formato `YYYYMMDDTHHMMSSZ` — sem `:` nem `-`.
-- **Os dois aceitam o calendar default do usuário** sem precisar especificar. No Felipe,
-  Google manda pra "Felipe Trindade", Outlook pra calendário corporativo.
-- **Esta skill não tem deduplicação** — se rodada duas vezes seguidas com mesmo título e
-  hora, vai criar dois eventos iguais. Comportamento esperado (Felipe quer poder marcar
-  bloqueios idênticos quando precisar).
+- **Os dois aceitam o calendar default do usuário** sem precisar especificar. No 
