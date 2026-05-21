@@ -8,6 +8,17 @@ A extensão **Claude in Chrome** se identifica como `name: "Chrome"` no `list_co
 
 Sempre listar todos os navegadores conectados e usar `name` pra distinguir — não confiar em assumptions.
 
+## NÃO lançar Edge via Start-Process se o usuário já tem Edge aberto
+
+Em uma sessão (2026-05-20), rodar `Start-Process msedge` quando o usuário tinha Edge aberto pelo taskbar **derrubou a sessão de login dele no Google**. A janela nova abriu sem cookies, e algo no processo de inicialização também afetou a janela existente — o usuário precisou relogar manualmente.
+
+**Regra**: se `list_connected_browsers` vier vazio, pedir pro usuário garantir manualmente que:
+1. O Edge dele está aberto
+2. A extensão Claude in Chrome está habilitada
+3. A extensão está pareada (clicou no ícone e aprovou)
+
+Só lançar via processo se o usuário pedir explicitamente "abre o Edge pra mim".
+
 ## Outlook Web — extração de eventos
 
 ### Use Week view, NÃO Month view

@@ -256,4 +256,8 @@ Se as coordenadas falharem (click em área vazia), usar `find` com query "Save b
 - **Outlook deeplink aceita ISO local sem TZ** (ex: `2026-05-19T21:00:00`) — interpreta
   no timezone do navegador. Não tentar UTC, dá errado.
 - **Google deeplink exige UTC com Z** no formato `YYYYMMDDTHHMMSSZ` — sem `:` nem `-`.
-- **Os dois aceitam o calendar default do usuário** sem precisar especificar. No 
+- **Os dois aceitam o calendar default do usuário** sem precisar especificar. No Felipe,
+  Google manda pra "Felipe Trindade", Outlook pra calendário corporativo.
+- **Esta skill não tem deduplicação** — se rodada duas vezes seguidas com mesmo título e
+  hora, vai criar dois eventos iguais. Comportamento esperado (Felipe quer poder marcar
+  bloqueios idênticos quando precisar).

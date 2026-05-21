@@ -303,4 +303,5 @@ Deleção parcial:
 - Esta skill **não deleta séries recorrentes inteiras** — só ocorrências individuais. Se
   Felipe pedir explicitamente "deleta a série toda" / "tira essa reunião recorrente do
   calendário", pular o tile da ocorrência e ir direto no menu de série (Outlook tem "Série"
-  ao lado de "E
+  ao lado de "Evento" no editor; Google tem opção no dialog que aparece ao deletar
+  recorrente).

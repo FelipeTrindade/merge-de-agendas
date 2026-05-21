@@ -65,29 +65,27 @@ Chamar `mcp__Claude_in_Chrome__list_connected_browsers`.
 - **Se retornar 1+ browser**: ótimo, pular pra 0.3
 - **Se retornar vazio**: ir pra 0.2
 
-### 0.2 — Abrir o Edge se não estiver conectado
+### 0.2 — Edge não conectado: PEDIR PRO FELIPE, não lançar via processo
 
-Tentar nesta ordem, parando assim que `list_connected_browsers` voltar a retornar algo:
+**Lição aprendida (2026-05-20)**: rodar `Start-Process msedge` quando o Felipe já tem uma
+janela do Edge aberta pode derrubar a sessão dele (deslogou do Google numa interação anterior).
+Mesmo quando lança limpo, a janela nova vem sem cookies — Felipe acaba tendo que relogar.
 
-1. **Desktop Commander start_process**:
-   ```
-   mcp__Desktop_Commander__start_process command:
-     "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
-   ```
-   Caminho alternativo: `C:\Program Files\Microsoft\Edge\Application\msedge.exe`
+**Caminho correto**: pedir pro Felipe garantir manualmente:
 
-2. **Bash via cmd.exe** (se Desktop Commander não estiver disponível):
-   ```bash
-   cmd.exe /c start msedge
-   ```
+1. Edge do taskbar aberto (o "de uso diário", logado nas duas contas).
+2. A extensão **Claude in Chrome** instalada nesse Edge.
+3. A extensão **pareada** — clicar no ícone dela e aprovar o pareamento.
 
-3. **Pedir ao Felipe** (último recurso): "Não consegui abrir o Edge automaticamente. Abra
-   manualmente e me peça o merge de novo."
+Mensagem ao Felipe quando `list_connected_browsers` está vazio:
+> "Não vejo o Edge conectado. Pode abrir o Edge pela barra de tarefas (não preciso de uma nova
+> janela), e confirmar que a extensão Claude está habilitada e pareada (clica no ícone dela na
+> barra do navegador)? Quando estiver, me avisa."
 
-Após disparar o open, aguardar 5 segundos e chamar `list_connected_browsers` de novo. Se ainda
-vazio, repetir até 3 vezes com intervalo de 5s. Se em 15s não conectar, parar e avisar:
-> "Abri o Edge mas o Claude in Chrome não detectou. A extensão pode estar desativada. Ative
-> a extensão Claude no Edge e me peça o merge de novo."
+Aguardar a confirmação do Felipe antes de retentar `list_connected_browsers`. NÃO lançar Edge
+programaticamente — o risco-recompensa não compensa.
+
+Caminho com `start_process` só se Felipe pedir EXPLICITAMENTE "abre o Edge pra mim".
 
 ### 0.3 — Selecionar o browser certo
 
@@ -451,4 +449,235 @@ Antes de criar qualquer coisa, mostrar no chat uma tabela como esta:
 
 ```
 PLANO DE MERGE — semana de 19/05/2026
-==================
+==========================================================
+
+Vou CRIAR 7 eventos no Google (vindos do Outlook):
+  • 20/05 14:00  Reunião 1:1 com Maria
+  • 21/05 09:30  Sprint planning
+  • 22/05 11:00  Café com cliente XPTO
+  ...
+
+Vou DELETAR 2 eventos no Google (cancelados no Outlook):
+  • 20/05 10:00  Daily Standup — cancelado no Outlook
+  • 23/05 15:00  Reunião com Banco — removido do Outlook
+
+Já em sync (nada a fazer): 12 eventos
+Casos ambíguos para revisar manualmente: 2
+  ? "Daily" às 09:00 no Outlook vs "Stand-up" às 09:00 no Google — mesmo evento?
+
+==========================================================
+TOTAL: 7 criações + 2 deleções. Confirma que posso prosseguir? (sim/não)
+```
+
+**Hardstops antes de pedir confirmação:**
+
+- Se `criar_no_google` > LIMITE_CRIACOES_POR_DIRECAO (50) → parar e perguntar:
+  "Caí em 73 criações no Google. Suspeito de problema na extração. Quer que eu mostre os
+  primeiros 10 pra você sanity-check antes de seguir?"
+- Mesmo para `criar_no_outlook`.
+- Se `criar_no_google` + `criar_no_outlook` = 0 → reportar "Tudo já em sync, nada a fazer" e
+  encerrar.
+
+Esperar resposta afirmativa explícita do Felipe ("sim", "ok", "vai", "confirma"). Não prosseguir
+em silêncio.
+
+---
+
+### Fase 5 — Criar os eventos
+
+**Estratégia preferida: import via ICS** (1 arquivo, ~30s de manual handoff)
+
+Pra 5+ eventos a criar, NÃO crie um a um via UI — vai consumir 150+ tool calls e travar.
+O caminho rápido: gerar um `.ics` com todos os eventos, baixar pelo navegador, e o Felipe
+fazer upload manual no Google Calendar (4 cliques). Detalhes em 5.1.A.
+
+Pra <5 eventos, criação one-by-one via URL `eventedit` ainda funciona — ver 5.1.B.
+
+#### 5.1.A — Caminho ICS (recomendado para qualquer volume)
+
+Na aba do Outlook (que tem `window.__aCriarFinal` na memória), rodar JS que:
+
+1. Constrói um arquivo ICS válido em memória:
+   ```js
+   function toICS(iso) { /* converte ISO local pra YYYYMMDDTHHMMSSZ */ }
+   function escICS(s)  { /* escape de \, ; , \n no formato ICS */ }
+   const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//merge-agendas//', 'CALSCALE:GREGORIAN'];
+   for (const ev of window.__aCriarFinal) {
+     ics.push('BEGIN:VEVENT');
+     ics.push(`UID:merge-agendas-${Date.now()}-${i}@local`);
+     ics.push(`DTSTAMP:${toICS(new Date().toISOString())}`);
+     ics.push(`DTSTART:${toICS(ev.start)}`);
+     ics.push(`DTEND:${toICS(ev.end)}`);
+     ics.push(`SUMMARY:${escICS(ev.title)}`);
+     ics.push(`DESCRIPTION:${escICS('Original no Outlook.\\n\\n[merge-agendas | source=outlook | run=YYYY-MM-DD]')}`);
+     ics.push('END:VEVENT');
+   }
+   ics.push('END:VCALENDAR');
+   ```
+2. Dispara um download via Blob: cria `<a download="merge-agendas-YYYY-MM-DD.ics">`, clica
+   programaticamente. Arquivo cai em `C:\Users\FELIPE\Downloads\`.
+3. Avisa o Felipe:
+   > "Gerei o arquivo `merge-agendas-YYYY-MM-DD.ics` em Downloads com X eventos. Pra
+   > finalizar, faça isso (30s):
+   >  1. Google Calendar → ⚙️ → Configurações
+   >  2. Menu esquerdo → Importar e exportar  
+   >  3. Selecionar arquivo do seu computador → escolha o `.ics`
+   >  4. Confirma 'Importar'.
+   > Os eventos vão entrar com a tag `[merge-agendas | source=outlook | run=...]` na
+   > descrição, então a próxima run não duplica."
+
+**Por que não auto-clicar o import**:
+1. A URL `/r/settings/import` do Google Calendar é notoriamente instável — frequentemente
+   faz redirect pra view normal de calendário sem carregar a página de settings. O caminho
+   confiável é: clicar gear (canto sup direito) → Settings → "Import & export" no menu
+   lateral esquerdo. Tipicamente coords ~ (907, 32) → (925, 80) → (75, 553) na resolução
+   1270×916, mas o Felipe pode estar em outra resolução — usar `find` quando inseguro.
+2. A página de Import tem um `<input type="file">` (achável por `find` com query "file input
+   for ICS upload"), MAS o tool `mcp__Claude_in_Chrome__file_upload` retorna
+   `{"code":-32000,"message":"Not allowed"}` — a extensão Claude in Chrome **bloqueia
+   upload de arquivos locais** por política de segurança. Mesmo movendo o .ics pra pasta
+   do projeto (que é mounted no sandbox), o upload é bloqueado.
+
+**Conclusão**: depois de carregar a tela de Import com sucesso, parar e pedir handoff de
+~10s pro Felipe clicar "Select file from your computer", escolher o .ics, e clicar
+Import. Não tentar mais que 1 vez o upload — o erro é determinístico, não transitório.
+
+#### 5.1.B — Criar um a um (só pra <5 eventos)
+
+Pra cada evento, navegar a aba do Google na URL:
+```
+https://calendar.google.com/calendar/u/0/r/eventedit?text=<URLENCODE_TITULO>&dates=<DATA_INICIO>/<DATA_FIM>&details=<URLENCODE_DESCRICAO>
+```
+- Datas em formato `YYYYMMDDTHHMMSSZ` (UTC com Z)
+- Aguardar carregar (~2s)
+- Encontrar botão "Save" (aria-label "Save" em inglês ou "Salvar") e clicar
+- Aguardar volta pra view de calendário antes do próximo
+
+#### 5.2 — Criar no Outlook os eventos vindos do Google (se bidirecional)
+
+Voltar pra aba do Outlook. Mesmo procedimento, com o atalho `n` (novo evento no Outlook Web)
+ou clicando no botão "Novo evento". Descrição:
+
+```
+Original na agenda pessoal (Gmail).
+Para detalhes, abra o evento na sua agenda pessoal.
+
+[merge-agendas | source=gmail | run=2026-05-19]
+```
+
+Pelos mesmos motivos: sem participantes, sem links de meet copiados.
+
+#### 5.3 — Tratamento de erros durante a criação
+
+Se uma criação falhar (página travou, botão sumiu, erro de validação):
+- Logar o evento no array `falhas`
+- Tentar 1 retry após 2 segundos
+- Se falhar de novo, pular e seguir — não travar o merge inteiro por um evento
+
+Ao final, reportar:
+
+```
+Merge concluído.
+  ✓ 7/7 eventos criados no Google
+  ✓ 2/3 eventos criados no Outlook (1 falhou — ver detalhes abaixo)
+
+Falhas:
+  ✗ "Dentista" 24/05 16:30 — erro: timeout ao salvar. Crie manualmente.
+
+Próximo merge sugerido: rodar de novo daqui a 7 dias.
+```
+
+---
+
+## Matching avançado — regras de tie-break
+
+A regra básica (título normalizado + início ±5min) cobre 95% dos casos. Para os outros 5%:
+
+| Situação | Comportamento |
+|----------|---------------|
+| Mesmo título, mesma hora, calendários diferentes | Match ✓ (skip — já em sync) |
+| Mesma hora, títulos parecidos (diff só de pontuação/emoji) | Match ✓ |
+| Mesma hora exata, títulos completamente diferentes | Não-match — criar dos dois lados (são eventos diferentes que coincidem) |
+| Título idêntico, horários com diff > 5min | Não-match — criar (Felipe pode ter remarcado em uma agenda) |
+| Evento tem tag `[merge-agendas` em qualquer agenda | Ignorar — é uma cópia da skill |
+| Recorrente — várias ocorrências com mesmo título | Tratar cada ocorrência como evento avulso |
+
+**Importante sobre recorrentes**: a skill NÃO replica regras de recorrência. Cada ocorrência
+individual dentro da janela é copiada como evento isolado. Vantagens: simples e seguro.
+Desvantagem: se Felipe mudar a regra original, as cópias antigas viram órfãs até a próxima run
+expirar a janela. Aceitável.
+
+---
+
+## O que NÃO copiar — lista exata
+
+Coisas que ficam só na agenda de origem, mesmo que o usuário tenha pedido "detalhes completos":
+
+- **Eventos cancelados.** Qualquer evento cujo título começa com `Cancelado:`, `Canceled:`,
+  `Cancelled:` (ou variações case-insensitive), OU cujo status no Outlook/Google é
+  "cancelado / declined / removed", é DESCARTADO no filtro inicial. Não vai pro JSON de
+  eventos a comparar, não vai pro plano, não é criado em lugar nenhum. Isso resolve o problema
+  do Outlook listar reuniões canceladas que ainda aparecem na grade. Aplicar esse filtro
+  imediatamente após o parse de cada lado, antes da Fase 3.
+- **Participantes / attendees** — copiar dispararia convites pra colegas a partir da agenda
+  pessoal, o que é constrangedor.
+- **Links de reunião** (Teams, Meet, Zoom) — só funcionam autenticado na conta de origem. Na
+  cópia, colocar nota "abra o original em [agenda] pra entrar".
+- **Anexos / arquivos** — não dá pra "copiar" um anexo entre os dois ecossistemas.
+- **Categorias/cores específicas do Outlook** — Google não tem equivalente direto.
+- **Status "Tentativa" / "Provisório"** — se Felipe ainda não confirmou no Outlook, ainda
+  assim copiar (ele decide depois). Só "Cancelado" é hard-skip.
+
+---
+
+## State file (opcional mas útil pra debug)
+
+A cada run, salvar em `[PASTA_TRABALHO]\.merge_state.json` um log:
+
+```json
+{
+  "ultima_run": "2026-05-19T14:23:00-03:00",
+  "criados_no_google": 7,
+  "criados_no_outlook": 2,
+  "falhas": [],
+  "ambiguos_reportados": 2
+}
+```
+
+Esse arquivo NÃO é fonte de verdade pra deduplicação (a tag na descrição é). É só pra histórico
+e pra detectar se algo deu muito errado entre runs (ex: "semana passada criou 5, esta semana
+quer criar 50 — algo está errado").
+
+---
+
+## Erros comuns e tratamentos
+
+| Sintoma | Diagnóstico mais provável | Ação |
+|---------|---------------------------|------|
+| Tela de login aparece | Sessão expirou | Pedir pro Felipe fazer login no Edge |
+| `get_page_text` retorna pouca coisa | Página ainda carregando | `sleep 2`, tentar de novo |
+| Atalho de teclado não funciona | Foco do navegador não está na agenda | Clicar primeiro numa área neutra da página |
+| Plano gigante (50+ criações) | Provavelmente falhou em ler a outra agenda direito | Parar, mostrar amostra, pedir confirmação |
+| "Não sei se é o mesmo evento" | Casos ambíguos | Listar pra Felipe revisar manualmente, não inventar match |
+| Outlook abre uma aba lateral em vez do editor cheio | UI tem dois modos de criação | Procurar "Mais opções" ou pressionar Esc e tentar `n` |
+
+---
+
+## Notas importantes
+
+- **Direção padrão: unilateral Outlook → Google.** A prioridade do Felipe é que TODOS os
+  compromissos do trabalho apareçam na agenda pessoal — o caminho reverso (Google → Outlook)
+  só roda se ele pedir explicitamente "também passa do pessoal pro trabalho" / "bidirecional".
+  Por padrão, eventos da agenda pessoal NÃO vão pro Outlook.
+- **Esta skill é manual, não agendada.** Não criar `scheduled_task` automaticamente. Se o Felipe
+  pedir "agenda toda terça às 9h", aí sim criar.
+- **Idempotência depende da tag.** Se Felipe editar a descrição de uma cópia e remover a tag,
+  o próximo run pode duplicar o evento. Avisar uma vez no preview da primeira run.
+- **Detalhes "completos" mas privados**: títulos copiados como estão. Se aparecer evento com
+  título sensível ("Avaliação trimestral — confidencial"), Felipe pode editar manualmente na
+  agenda destino sem afetar a deduplicação (a tag na descrição é o que conta).
+- **Funcionou com Edge logado nas duas contas.** Se um dia o Felipe usar outro navegador, a
+  skill precisa rodar lá (Claude in Chrome funciona com qualquer Chromium logado).
+- **Quando a UI do Outlook ou Google mudar significativamente** (e elas mudam), a Fase 1 ou 2
+  pode parar de extrair direito. Sintoma: plano vazio ou cheio demais. Conserto: ajustar a
+  heurística de parsing em 1.4 / 2.3 desta SKILL.md.
